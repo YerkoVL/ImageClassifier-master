@@ -27,6 +27,11 @@ public class Recognition {
         return confidence;
     }
 
+    //GENERATE
+    public String getName() {
+        return title;
+    }
+
 
     @Override
     public String toString() {

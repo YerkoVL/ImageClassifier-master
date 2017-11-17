@@ -13,6 +13,7 @@ import android.media.Image;
 import android.media.ImageReader;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.SystemClock;
@@ -20,16 +21,22 @@ import android.os.Trace;
 import android.util.Log;
 import android.util.Size;
 import android.view.Display;
+import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.app.androidkt.tensorf.tools.Keys;
+import com.app.androidkt.tensorf.tools.YourPreference;
 import com.app.androidkt.tensorf.util.ImageUtils;
 import com.app.androidkt.tensorf.util.Recognition;
+import com.kofigyan.stateprogressbar.StateProgressBar;
+import com.shashank.sony.fancytoastlib.FancyToast;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends Activity implements ImageReader.OnImageAvailableListener, CameraFragment.ConnectionCallback {
@@ -70,24 +77,28 @@ public class MainActivity extends Activity implements ImageReader.OnImageAvailab
 
     private ImageView fingerRight;
 
+    YourPreference yourPreference;
+    StateProgressBar stateProgressBar;
+    Drawable finger;
+
+    int auxFront = 0 , auxBack = 0;
+
+    String[] descriptionData = {"30%", "70%", "100%", "Confirm"};
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_main);
 
+        stateProgressBar = (StateProgressBar) findViewById(R.id.state_progress_bar);
+        stateProgressBar.setStateDescriptionData(descriptionData);
+
+        yourPreference = YourPreference.getInstance(this);
         fingerRight = (ImageView) findViewById(R.id.animRight);
 
-        final Drawable finger = fingerRight.getDrawable();
+        finger = fingerRight.getDrawable();
 
-        fingerRight.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(finger instanceof Animatable){
-                    ((Animatable) finger).start();
-                }
-            }
-        });
 
         if (hasPermission()) {
             setFragment();
@@ -275,16 +286,29 @@ public class MainActivity extends Activity implements ImageReader.OnImageAvailab
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                if (results.size() > 0)
+                                if (results.size() > 0) {
                                     resultsView.setText(results.toString());
-                                else
-                                    resultsView.setText("Not Classify");
+                                    scanEnviroment(results);
 
+                                }else {
+                                    resultsView.setText("No Identificado");
+                                }
                             }
                         });
                         computing = false;
                     }
                 });
+        /*
+        runInBackground(new Runnable() {
+            @Override
+            public void run() {
+                if(finger instanceof Animatable){
+                    if(){
+                        ((Animatable) finger).start();
+                    }
+                }
+            }
+        });*/
 
         Trace.endSection();
     }
@@ -299,6 +323,53 @@ public class MainActivity extends Activity implements ImageReader.OnImageAvailab
                 yuvBytes[i] = new byte[buffer.capacity()];
             }
             buffer.get(yuvBytes[i]);
+        }
+    }
+
+    private void scanEnviroment(List<Recognition> resultsList){
+        float percentant = resultsList.get(0).getConfidence()*100;
+        String name = resultsList.get(0).getName().toString();
+        if(percentant>=20){
+            if(name.equals(Keys.KEY_FRONTAL)){
+                final String partScan = Keys.KEY_FRONTAL;
+                auxFront ++;
+                switch (auxFront){
+                    case 1:
+                        stateProgressBar.setCurrentStateNumber(StateProgressBar.StateNumber.ONE);
+                        break;
+                    case 2:
+                        stateProgressBar.setCurrentStateNumber(StateProgressBar.StateNumber.TWO);
+                        break;
+                    case 3:
+                        stateProgressBar.setCurrentStateNumber(StateProgressBar.StateNumber.THREE);
+                        break;
+                }
+                //TOAST FRONTAL
+             if(auxFront==3){
+                 yourPreference.saveDataFloat(Keys.KEY_FRONTAL,percentant);
+
+                 if(finger instanceof Animatable){
+                     fingerRight.setVisibility(View.VISIBLE);
+                     new CountDownTimer(4000, 1000) {
+
+                         public void onTick(long millisUntilFinished) {
+                             ((Animatable) finger).start();
+                             //here you can have your logic to set text to edittext
+                         }
+
+                         public void onFinish() {
+                             ((Animatable) finger).stop();
+                             fingerRight.setVisibility(View.GONE);
+                             FancyToast.makeText(MainActivity.this,"¡Fin de escaneo " + partScan + "!",FancyToast.LENGTH_LONG,FancyToast.SUCCESS,true);
+                             stateProgressBar.setVisibility(View.GONE);
+                         }
+
+                     }.start();
+                 }
+             }
+            }
+        }else{
+
         }
     }
 

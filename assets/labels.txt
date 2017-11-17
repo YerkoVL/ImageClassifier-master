@@ -1,2 +1,24 @@
+calle
+calle acera
+calle autos
+calle peatones
+choque frontal alto
+choque frontal derecho alto
+choque frontal derecho leve
+choque frontal derecho medio
+choque frontal izquierdo alto
+choque frontal izquierdo leve
+choque frontal izquierdo medio
+choque frontal medio
+choque trasero alto
+choque trasero derecho alto
+choque trasero derecho leve
+choque trasero derecho medio
+choque trasero izquierdo alto
+choque trasero izquierdo leve
+choque trasero izquierdo medio
+choque trasero leve
+choque trasero medio
 frontal
+oficina
 trasera
