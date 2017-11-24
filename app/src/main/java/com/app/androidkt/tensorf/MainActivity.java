@@ -305,8 +305,9 @@ public class MainActivity extends Activity implements ImageReader.OnImageAvailab
                                     if(auxFront<3) {
                                         scanEnviroment(results);
                                     }else if (auxBack<4){
-                                        Toast.makeText(ctx,"Se procederá a escanear la parte trasera",Toast.LENGTH_SHORT).show();
                                         stateProgressBar.setVisibility(View.VISIBLE);
+                                        stateProgressBar.refreshDrawableState();
+                                        stateProgressBar.setCurrentStateNumber(StateProgressBar.StateNumber.ONE);
                                         scanEnviromentBack(results);
                                     }
                                 }else {
@@ -368,7 +369,7 @@ public class MainActivity extends Activity implements ImageReader.OnImageAvailab
                          public void onFinish() {
                              ((Animatable) finger).stop();
                              fingerRight.setVisibility(View.GONE);
-
+                             Toast.makeText(ctx,"Se procederá a escanear la parte trasera",Toast.LENGTH_SHORT).show();
                              stateProgressBar.setVisibility(View.GONE);
                          }
 
