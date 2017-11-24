@@ -1,9 +1,13 @@
 <resources>
-    <string name="app_name">TensorF</string>
+    <string name="app_name">SiniestroApp</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
     <string name="scan">Éxito</string>
     <string name="frontSucces">Escaneo frontal terminado</string>
+    <string name="description_info">Info</string>
+    <string name="access_token">sk.eyJ1IjoieWVya292ZXJhbGV6YW1hIiwiYSI6ImNqM3JuMnQ4ZDAxZGMycG82aXprOXRmN28ifQ.fEbW8AqTRbDqQu0zaCdu3Q</string>
+    <string name="request_permission">This sample needs camera permission.</string>
+    <string name="camera_error">This device doesn\'t support Camera2 API.</string>
 </resources>

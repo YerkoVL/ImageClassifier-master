@@ -1,8 +1,10 @@
 package com.app.androidkt.tensorf;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -21,7 +23,6 @@ import android.os.Trace;
 import android.util.Log;
 import android.util.Size;
 import android.view.Display;
-import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -33,10 +34,8 @@ import com.app.androidkt.tensorf.tools.YourPreference;
 import com.app.androidkt.tensorf.util.ImageUtils;
 import com.app.androidkt.tensorf.util.Recognition;
 import com.kofigyan.stateprogressbar.StateProgressBar;
-import com.shashank.sony.fancytoastlib.FancyToast;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends Activity implements ImageReader.OnImageAvailableListener, CameraFragment.ConnectionCallback {
@@ -77,11 +76,15 @@ public class MainActivity extends Activity implements ImageReader.OnImageAvailab
 
     private ImageView fingerRight;
 
+    List<Recognition> generalResults;
+
     YourPreference yourPreference;
     StateProgressBar stateProgressBar;
     Drawable finger;
 
     int auxFront = 0 , auxBack = 0;
+
+    Context ctx;
 
     String[] descriptionData = {"30%", "70%", "100%", "Confirm"};
 
@@ -90,6 +93,8 @@ public class MainActivity extends Activity implements ImageReader.OnImageAvailab
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_main);
+
+        ctx = this;
 
         stateProgressBar = (StateProgressBar) findViewById(R.id.state_progress_bar);
         stateProgressBar.setStateDescriptionData(descriptionData);
@@ -223,6 +228,12 @@ public class MainActivity extends Activity implements ImageReader.OnImageAvailab
         }
     }
 
+    protected synchronized void run2InBackground(final Runnable r) {
+        if (handler != null) {
+            handler.post(r);
+        }
+    }
+
     @Override
     public void onImageAvailable(final ImageReader reader) {
         Image image = null;
@@ -273,43 +284,40 @@ public class MainActivity extends Activity implements ImageReader.OnImageAvailab
         final Canvas canvas = new Canvas(croppedBitmap);
         canvas.drawBitmap(rgbFrameBitmap, frameToCropTransform, null);
 
+        final long startTime = SystemClock.uptimeMillis();
+        final List<Recognition> results = classifier.recognizeImage(croppedBitmap);
+        lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
+
+        cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
 
         runInBackground(
                 new Runnable() {
                     @Override
                     public void run() {
-                        final long startTime = SystemClock.uptimeMillis();
-                        final List<Recognition> results = classifier.recognizeImage(croppedBitmap);
-                        lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
 
-                        cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
                         runOnUiThread(new Runnable() {
+                            @SuppressLint("WrongConstant")
                             @Override
                             public void run() {
                                 if (results.size() > 0) {
                                     resultsView.setText(results.toString());
-                                    scanEnviroment(results);
-
+                                    //generalResults = results;
+                                    if(auxFront<3) {
+                                        scanEnviroment(results);
+                                    }else if (auxBack<4){
+                                        Toast.makeText(ctx,"Se procederá a escanear la parte trasera",Toast.LENGTH_SHORT).show();
+                                        stateProgressBar.setVisibility(View.VISIBLE);
+                                        scanEnviromentBack(results);
+                                    }
                                 }else {
                                     resultsView.setText("No Identificado");
                                 }
                             }
                         });
-                        computing = false;
                     }
                 });
-        /*
-        runInBackground(new Runnable() {
-            @Override
-            public void run() {
-                if(finger instanceof Animatable){
-                    if(){
-                        ((Animatable) finger).start();
-                    }
-                }
-            }
-        });*/
 
+        computing = false;
         Trace.endSection();
     }
 
@@ -331,7 +339,7 @@ public class MainActivity extends Activity implements ImageReader.OnImageAvailab
         String name = resultsList.get(0).getName().toString();
         if(percentant>=20){
             if(name.equals(Keys.KEY_FRONTAL)){
-                final String partScan = Keys.KEY_FRONTAL;
+                //final String partScan = Keys.KEY_FRONTAL;
                 auxFront ++;
                 switch (auxFront){
                     case 1:
@@ -360,13 +368,43 @@ public class MainActivity extends Activity implements ImageReader.OnImageAvailab
                          public void onFinish() {
                              ((Animatable) finger).stop();
                              fingerRight.setVisibility(View.GONE);
-                             FancyToast.makeText(MainActivity.this,"¡Fin de escaneo " + partScan + "!",FancyToast.LENGTH_LONG,FancyToast.SUCCESS,true);
+
                              stateProgressBar.setVisibility(View.GONE);
                          }
 
                      }.start();
                  }
              }
+            }
+        }else{
+
+        }
+    }
+
+    private void scanEnviromentBack(List<Recognition> resultsList){
+        float percentant = resultsList.get(0).getConfidence()*100;
+        String name = resultsList.get(0).getName().toString();
+        if(percentant>=20){
+            if(name.equals(Keys.KEY_TRASERO)){
+                //final String partScan = Keys.KEY_FRONTAL;
+                auxBack ++;
+                switch (auxBack){
+                    case 1:
+                        stateProgressBar.setCurrentStateNumber(StateProgressBar.StateNumber.ONE);
+                        break;
+                    case 2:
+                        stateProgressBar.setCurrentStateNumber(StateProgressBar.StateNumber.TWO);
+                        break;
+                    case 3:
+                        stateProgressBar.setCurrentStateNumber(StateProgressBar.StateNumber.THREE);
+                        break;
+                }
+                //TOAST FRONTAL
+                if(auxBack==3){
+                    yourPreference.saveDataFloat(Keys.KEY_TRASERO,percentant);
+                    stateProgressBar.setVisibility(View.GONE);
+                    finish();
+                }
             }
         }else{
 

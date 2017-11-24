@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Watson Conversation Service Credentials 6789f819-b62d-49c4-b072-9a1579507985 //ID - e17ae050-314f-4577-abfa-6d2eef877702--> 
+    <string name="workspace_id">6899db69-d4b0-4fd9-9ab0-ce541cb39490</string> 
+    <string name="conversation_username">93615c07-0a67-46b7-8314-0b6cf78537a9</string> 
+    <string name="conversation_password">Pwm4hkilzFI4</string>  
+
+    <!--Bluemix Mobile Analytics--> 
+    <string name="mobileanalytics_apikey">5bc78043-759d-4e52-9355-861b406bdaef</string>
+</resources>

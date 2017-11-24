@@ -9,4 +9,8 @@
     <color name="colorClaroStep">#B3E5FC</color>
     <color name="colorOscuroStep">#29B6F6</color>
     <color name="colorLetraStep">#000000</color>
+
+    <color name="control_background">#cc4285f4</color>
+    <color name="bg_bubble_self">#62caa6</color>
+    <color name="bg_bubble_watbot">#ecf0f1</color>
 </resources>

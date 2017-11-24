@@ -15,7 +15,7 @@ public class YourPreference {
     }
 
     private YourPreference(Context context) {
-        sharedPreferences = context.getSharedPreferences("YourCustomNamedPreference",Context.MODE_PRIVATE);
+        sharedPreferences = context.getSharedPreferences("MyChat",Context.MODE_PRIVATE);
     }
 
     public void saveDataString(String key,String value) {

@@ -10,7 +10,7 @@ public class Keys {
     public static String KEY_CHOQUE_TRASERO = "choque_trasero";
 
     public static String KEY_FRONTAL = "frontal";
-    public static String KEY_TRASERO = "trasero";
+    public static String KEY_TRASERO = "trasera";
 
     public static String KEY_FRONTAL_DERECHO = "frontal_derecho";
     public static String KEY_FRONTAL_IZQUIERDO = "frontal_izquierdo";
